@@ -115,7 +115,7 @@ const Marketplace = () => {
                         <div className="h-48 bg-slate-800 relative">
                             {item.image ? (
                                 <img 
-                                    src={`http://localhost:5000/${item.image}`} 
+                                    src={`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000'}/${item.image}`} 
                                     alt={item.title} 
                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                 />

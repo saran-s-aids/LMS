@@ -104,7 +104,7 @@ const Chat = () => {
                             >
                                 <div className="w-12 h-12 rounded-xl bg-slate-800 overflow-hidden shrink-0 border border-slate-700 flex items-center justify-center">
                                     {c.marketplaceItemId?.image ? (
-                                        <img src={`http://localhost:5000/${c.marketplaceItemId.image}`} className="w-full h-full object-cover" />
+                                        <img src={`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000'}/${c.marketplaceItemId.image}`} className="w-full h-full object-cover" />
                                     ) : (
                                         <ShoppingBag size={20} />
                                     )}
