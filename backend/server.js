@@ -101,10 +101,8 @@ app.use((err, req, res, next) => {
 
 // Port
 const PORT = process.env.PORT || 5000;
-if (process.env.NODE_ENV !== 'production') {
-    server.listen(PORT, () => {
-        console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-    });
-}
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
 
 module.exports = app;
