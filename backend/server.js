@@ -18,6 +18,7 @@ const io = new Server(server, {
             'http://localhost:5173',
             'http://localhost:3000',
             'https://lms-nu-sable.vercel.app',
+            'https://lms-98nt.vercel.app',
             process.env.FRONTEND_URL,
         ].filter(Boolean),
         methods: ['GET', 'POST'],
@@ -30,6 +31,7 @@ const ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',
     'https://lms-nu-sable.vercel.app',
+    'https://lms-98nt.vercel.app',
     process.env.FRONTEND_URL,
 ].filter(Boolean);
 
