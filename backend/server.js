@@ -8,7 +8,9 @@ const mongoose = require('mongoose');
 const Message = require('./models/Message');
 
 // Connect to Database
-connectDB();
+connectDB().catch(err => {
+    console.error('Initial Database Connection Error:', err.message);
+});
 
 const app = express();
 const server = http.createServer(app);
