@@ -1,3 +1,4 @@
+// Smart Campus LMS Backend - Production Deployment
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
