@@ -18,6 +18,10 @@
     {
       "source": "/socket.io/(.*)",
       "destination": "/server.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/server.js"
     }
   ],
   "headers": [
