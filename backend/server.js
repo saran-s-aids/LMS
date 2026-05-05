@@ -4,6 +4,7 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
+const mongoose = require('mongoose');
 const Message = require('./models/Message');
 
 // Connect to Database
@@ -91,7 +92,20 @@ app.use('/api/requests', require('./routes/bookRequestRoutes'));
 app.use('/api/issued', require('./routes/issuedBookRoutes'));
 
 app.get('/', (req, res) => {
-    res.send('Smart Campus LMS API is running...');
+    res.json({ 
+        message: 'Smart Campus LMS API is running...',
+        env: process.env.NODE_ENV,
+        dbStatus: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+    });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        message: 'Something went wrong on the server!',
+        error: process.env.NODE_ENV === 'production' ? {} : err.message
+    });
 });
 
 // Port
