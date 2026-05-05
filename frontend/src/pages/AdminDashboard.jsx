@@ -34,6 +34,7 @@ const AdminDashboard = () => {
     const [bookToDelete, setBookToDelete] = useState(null);
     const [categories, setCategories] = useState([]);
     const [books, setBooks] = useState([]);
+    const [students, setStudents] = useState([]);
     const [deleteType, setDeleteType] = useState(null); // 'category' or 'book'
     
     // Form States
@@ -72,10 +73,20 @@ const AdminDashboard = () => {
         }
     };
 
+    const fetchStudents = async () => {
+        try {
+            const { data } = await API.get('/admin/students');
+            setStudents(data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     useEffect(() => {
         fetchAnalytics();
         fetchCategories();
         fetchBooks();
+        fetchStudents();
     }, []);
 
     const handleAddCategory = async (e) => {
@@ -369,6 +380,55 @@ const AdminDashboard = () => {
                                     </td>
                                 </tr>
                             ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Registered Students Management */}
+            <div className="glass-card p-8 rounded-3xl">
+                <div className="flex items-center justify-between mb-8">
+                    <h3 className="text-xl font-bold text-white">Registered Students</h3>
+                    <div className="bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full text-sm font-medium">
+                        {students.length} Total
+                    </div>
+                </div>
+                
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="text-slate-400 border-b border-slate-800">
+                                <th className="pb-4 font-medium">Full Name</th>
+                                <th className="pb-4 font-medium">Student ID</th>
+                                <th className="pb-4 font-medium">Email Address</th>
+                                <th className="pb-4 font-medium">Joined Date</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-slate-300">
+                            {students.map((student) => (
+                                <tr key={student._id} className="border-b border-slate-800/50 hover:bg-white/5 transition-colors">
+                                    <td className="py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-primary-600/20 text-primary-400 flex items-center justify-center font-bold text-xs uppercase">
+                                                {student.name.charAt(0)}
+                                            </div>
+                                            <span className="font-semibold text-white">{student.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 font-mono text-xs text-slate-400 uppercase tracking-wider">{student.studentId}</td>
+                                    <td className="py-4 text-sm text-slate-400">{student.email}</td>
+                                    <td className="py-4 text-xs text-slate-500">
+                                        {new Date(student.createdAt).toLocaleDateString()}
+                                    </td>
+                                </tr>
+                            ))}
+                            {students.length === 0 && (
+                                <tr>
+                                    <td colSpan="4" className="py-10 text-center text-slate-500 italic">
+                                        No students registered yet.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
