@@ -1,3 +1,5 @@
+const path = require('path');
+const fs = require('fs');
 const Category = require('../models/Category');
 const Book = require('../models/Book');
 const User = require('../models/User');
@@ -57,12 +59,20 @@ const deleteCategory = async (req, res) => {
 const createBook = async (req, res) => {
     const { title, author, category, isbn, totalCopies, description } = req.body;
     try {
+        // Build cover image path if a file was uploaded
+        let coverImage = null;
+        if (req.file) {
+            // Store as relative URL path so frontend can access via /uploads/covers/<filename>
+            coverImage = `/uploads/covers/${req.file.filename}`;
+        }
+
         const book = await Book.create({ 
             title, 
             author, 
             category, 
             isbn, 
             description,
+            coverImage,
             totalCopies: Number(totalCopies),
             availableCopies: Number(totalCopies),
             issuedCopies: 0,
@@ -71,6 +81,8 @@ const createBook = async (req, res) => {
         });
         res.status(201).json(book);
     } catch (error) {
+        // Delete uploaded file on error to avoid orphan files
+        if (req.file) fs.unlinkSync(req.file.path);
         res.status(400).json({ message: error.message });
     }
 };
@@ -93,6 +105,16 @@ const updateBook = async (req, res) => {
             book.category = req.body.category || book.category;
             book.isbn = req.body.isbn || book.isbn;
             book.description = req.body.description || book.description;
+
+            // Handle cover image update
+            if (req.file) {
+                // Delete old cover if it exists
+                if (book.coverImage) {
+                    const oldPath = path.join(__dirname, '..', book.coverImage);
+                    if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+                }
+                book.coverImage = `/uploads/covers/${req.file.filename}`;
+            }
             
             if (req.body.totalCopies !== undefined) {
                 const diff = Number(req.body.totalCopies) - book.totalCopies;
@@ -107,6 +129,7 @@ const updateBook = async (req, res) => {
             res.status(404).json({ message: 'Book not found' });
         }
     } catch (error) {
+        if (req.file) fs.unlinkSync(req.file.path);
         res.status(400).json({ message: error.message });
     }
 };

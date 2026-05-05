@@ -10,6 +10,7 @@ const bookSchema = new mongoose.Schema({
     availableCopies: { type: Number, default: 1 },
     issuedCopies: { type: Number, default: 0 },
     availability: { type: String, enum: ['Available', 'Not Available'], default: 'Available' },
+    coverImage: { type: String, default: null },
     addedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     createdAt: { type: Date, default: Date.now }
 });

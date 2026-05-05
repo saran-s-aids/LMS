@@ -5,6 +5,9 @@ import { Search, Filter, Book, BookmarkCheck, AlertCircle, Send } from 'lucide-r
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
+const RAW_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE = RAW_API_URL.replace(/\/api$/, '');
+
 const Library = () => {
     const { user } = useAuth();
     const [books, setBooks] = useState([]);
@@ -118,9 +121,24 @@ const Library = () => {
                                 transition={{ delay: i * 0.05 }}
                                 className="glass-card p-6 rounded-2xl group hover:border-primary-500/50 transition-all flex flex-col"
                             >
-                                <div className="bg-slate-800 h-40 rounded-xl mb-4 flex items-center justify-center text-slate-600 group-hover:text-primary-400 transition-colors">
-                                    <Book size={48} />
-                                </div>
+                                {/* Cover Image or Placeholder */}
+                                {book.coverImage ? (
+                                    <div className="h-48 rounded-xl mb-4 overflow-hidden">
+                                        <img
+                                            src={`${API_BASE}${book.coverImage}`}
+                                            alt={book.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                        />
+                                        <div className="bg-slate-800 h-full rounded-xl items-center justify-center text-slate-600 group-hover:text-primary-400 transition-colors hidden">
+                                            <Book size={48} />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-slate-800 h-48 rounded-xl mb-4 flex items-center justify-center text-slate-600 group-hover:text-primary-400 transition-colors">
+                                        <Book size={48} />
+                                    </div>
+                                )}
                                 <div className="mb-4 flex-1">
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-primary-400 bg-primary-500/10 px-2 py-1 rounded">
                                         {book.category?.name || 'General'}

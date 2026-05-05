@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import API from '../api/axios';
 import { motion } from 'framer-motion';
-import { Users, BookOpen, BookmarkCheck, RotateCcw, Plus, Trash2, Clock, AlertCircle } from 'lucide-react';
+import { Users, BookOpen, BookmarkCheck, RotateCcw, Plus, Trash2, Clock, Image, X } from 'lucide-react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,7 +35,10 @@ const AdminDashboard = () => {
     
     // Form States
     const [bookForm, setBookForm] = useState({ title: '', author: '', category: '', isbn: '', totalCopies: 1, description: '' });
+    const [coverImageFile, setCoverImageFile] = useState(null);
+    const [coverImagePreview, setCoverImagePreview] = useState(null);
     const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
+    const coverInputRef = useRef(null);
 
     const fetchAnalytics = async () => {
         try {
@@ -91,13 +94,41 @@ const AdminDashboard = () => {
     const handleAddBook = async (e) => {
         e.preventDefault();
         try {
-            await API.post('/admin/books', bookForm);
+            const formData = new FormData();
+            formData.append('title', bookForm.title);
+            formData.append('author', bookForm.author);
+            formData.append('category', bookForm.category);
+            formData.append('isbn', bookForm.isbn);
+            formData.append('totalCopies', bookForm.totalCopies);
+            formData.append('description', bookForm.description);
+            if (coverImageFile) formData.append('coverImage', coverImageFile);
+
+            await API.post('/admin/books', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             setShowBookModal(false);
             setBookForm({ title: '', author: '', category: '', isbn: '', totalCopies: 1, description: '' });
+            setCoverImageFile(null);
+            setCoverImagePreview(null);
             fetchAnalytics();
         } catch (err) {
             console.error(err);
         }
+    };
+
+    const handleCoverImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setCoverImageFile(file);
+            setCoverImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const removeCoverImage = () => {
+        setCoverImageFile(null);
+        if (coverImagePreview) URL.revokeObjectURL(coverImagePreview);
+        setCoverImagePreview(null);
+        if (coverInputRef.current) coverInputRef.current.value = '';
     };
 
     if (loading) return <div className="text-white text-center mt-20">Loading Dashboard...</div>;
@@ -325,11 +356,52 @@ const AdminDashboard = () => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-1">Description (for AI AI summaries)</label>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Description (for AI summaries)</label>
                                 <textarea 
                                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-primary-500 transition-all h-24"
                                     value={bookForm.description}
                                     onChange={(e) => setBookForm({...bookForm, description: e.target.value})}
+                                />
+                            </div>
+
+                            {/* Cover Image Upload */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-2">Book Cover Image <span className="text-slate-600">(optional)</span></label>
+                                {coverImagePreview ? (
+                                    <div className="relative group w-full">
+                                        <img 
+                                            src={coverImagePreview} 
+                                            alt="Cover preview" 
+                                            className="w-full h-48 object-cover rounded-xl border border-slate-700"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={removeCoverImage}
+                                            className="absolute top-2 right-2 bg-red-600/80 hover:bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                        <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded-lg">
+                                            {coverImageFile?.name}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => coverInputRef.current?.click()}
+                                        className="w-full h-36 border-2 border-dashed border-slate-700 hover:border-primary-500 rounded-xl flex flex-col items-center justify-center gap-2 text-slate-500 hover:text-primary-400 transition-all"
+                                    >
+                                        <Image size={28} />
+                                        <span className="text-sm font-medium">Click to upload cover image</span>
+                                        <span className="text-xs">JPG, PNG, WebP up to 5MB</span>
+                                    </button>
+                                )}
+                                <input
+                                    ref={coverInputRef}
+                                    type="file"
+                                    accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                                    onChange={handleCoverImageChange}
+                                    className="hidden"
                                 />
                             </div>
                             <div className="flex gap-4 mt-8">
