@@ -31,7 +31,10 @@ const AdminDashboard = () => {
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
+    const [bookToDelete, setBookToDelete] = useState(null);
     const [categories, setCategories] = useState([]);
+    const [books, setBooks] = useState([]);
+    const [deleteType, setDeleteType] = useState(null); // 'category' or 'book'
     
     // Form States
     const [bookForm, setBookForm] = useState({ title: '', author: '', category: '', isbn: '', totalCopies: 1, description: '' });
@@ -60,9 +63,19 @@ const AdminDashboard = () => {
         }
     };
 
+    const fetchBooks = async () => {
+        try {
+            const { data } = await API.get('/admin/books');
+            setBooks(data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     useEffect(() => {
         fetchAnalytics();
         fetchCategories();
+        fetchBooks();
     }, []);
 
     const handleAddCategory = async (e) => {
@@ -91,6 +104,19 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleDeleteBook = async () => {
+        if (!bookToDelete) return;
+        try {
+            await API.delete(`/admin/books/${bookToDelete}`);
+            setShowDeleteModal(false);
+            setBookToDelete(null);
+            fetchAnalytics();
+            fetchBooks();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const handleAddBook = async (e) => {
         e.preventDefault();
         try {
@@ -111,6 +137,7 @@ const AdminDashboard = () => {
             setCoverImageFile(null);
             setCoverImagePreview(null);
             fetchAnalytics();
+            fetchBooks();
         } catch (err) {
             console.error(err);
         }
@@ -272,6 +299,67 @@ const AdminDashboard = () => {
                                         <button 
                                             onClick={() => {
                                                 setCategoryToDelete(cat._id);
+                                                setDeleteType('category');
+                                                setShowDeleteModal(true);
+                                            }}
+                                            className="text-slate-500 hover:text-red-400 transition-colors"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Book Management */}
+            <div className="glass-card p-8 rounded-3xl">
+                <div className="flex items-center justify-between mb-8">
+                    <h3 className="text-xl font-bold text-white">Book Inventory</h3>
+                </div>
+                
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="text-slate-400 border-b border-slate-800">
+                                <th className="pb-4 font-medium">Book</th>
+                                <th className="pb-4 font-medium">Author</th>
+                                <th className="pb-4 font-medium">Category</th>
+                                <th className="pb-4 font-medium">ISBN</th>
+                                <th className="pb-4 font-medium">Copies</th>
+                                <th className="pb-4 font-medium text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-slate-300">
+                            {books.map((book, i) => (
+                                <tr key={book._id} className="border-b border-slate-800/50 hover:bg-white/5 transition-colors">
+                                    <td className="py-4">
+                                        <div className="flex items-center gap-3">
+                                            {book.coverImage ? (
+                                                <img src={`${API.defaults.baseURL.replace('/api', '')}${book.coverImage}`} className="w-8 h-10 object-cover rounded shadow-sm" alt="" />
+                                            ) : (
+                                                <div className="w-8 h-10 bg-slate-800 rounded flex items-center justify-center text-slate-500">
+                                                    <BookOpen size={14} />
+                                                </div>
+                                            )}
+                                            <span className="font-semibold text-white">{book.title}</span>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 text-sm text-slate-400">{book.author}</td>
+                                    <td className="py-4 text-sm">
+                                        <span className="bg-slate-800 px-2 py-1 rounded-lg text-slate-300">
+                                            {book.category?.name || 'Uncategorized'}
+                                        </span>
+                                    </td>
+                                    <td className="py-4 text-sm font-mono text-slate-500">{book.isbn}</td>
+                                    <td className="py-4 text-sm">{book.totalCopies}</td>
+                                    <td className="py-4 text-right">
+                                        <button 
+                                            onClick={() => {
+                                                setBookToDelete(book._id);
+                                                setDeleteType('book');
                                                 setShowDeleteModal(true);
                                             }}
                                             className="text-slate-500 hover:text-red-400 transition-colors"
@@ -484,16 +572,24 @@ const AdminDashboard = () => {
                             <Trash2 size={32} />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-2">Are you sure?</h3>
-                        <p className="text-slate-400 mb-8">This action cannot be undone. All books in this category will remain but will lose their category association.</p>
+                        <p className="text-slate-400 mb-8">
+                            {deleteType === 'category' 
+                                ? 'This action cannot be undone. All books in this category will remain but will lose their category association.'
+                                : 'This action cannot be undone. This book will be permanently removed from the library.'}
+                        </p>
                         <div className="flex gap-4">
                             <button 
-                                onClick={() => setShowDeleteModal(false)}
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setCategoryToDelete(null);
+                                    setBookToDelete(null);
+                                }}
                                 className="flex-1 px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all"
                             >
                                 Cancel
                             </button>
                             <button 
-                                onClick={handleDeleteCategory}
+                                onClick={deleteType === 'category' ? handleDeleteCategory : handleDeleteBook}
                                 className="flex-1 px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-500 transition-all font-semibold"
                             >
                                 Delete
