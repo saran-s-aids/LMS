@@ -34,7 +34,7 @@
         },
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://lms-98nt.vercel.app"
+          "value": "https://lms-kroj.vercel.app"
         },
         {
           "key": "Access-Control-Allow-Methods",
