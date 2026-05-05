@@ -2,10 +2,14 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Ensure uploads/covers directory exists
+// Ensure uploads/covers directory exists (safe for read-only filesystems)
 const coversDir = path.join(__dirname, '..', 'uploads', 'covers');
-if (!fs.existsSync(coversDir)) {
-    fs.mkdirSync(coversDir, { recursive: true });
+try {
+    if (!fs.existsSync(coversDir)) {
+        fs.mkdirSync(coversDir, { recursive: true });
+    }
+} catch (err) {
+    console.warn('Warning: Could not create uploads directory. This is expected on read-only environments like Vercel.', err.message);
 }
 
 const storage = multer.diskStorage({
