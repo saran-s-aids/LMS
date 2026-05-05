@@ -19,9 +19,7 @@ const io = new Server(server, {
         origin: [
             'http://localhost:5173',
             'http://localhost:3000',
-            'https://lms-nu-sable.vercel.app',
-            'https://lms-98nt.vercel.app',
-            'https://lms-kroj.vercel.app',
+            'https://lms-p8nx.vercel.app',
             process.env.FRONTEND_URL,
         ].filter(Boolean),
         methods: ['GET', 'POST'],
@@ -33,15 +31,12 @@ const io = new Server(server, {
 const ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://lms-nu-sable.vercel.app',
-    'https://lms-98nt.vercel.app',
-    'https://lms-kroj.vercel.app',
+    'https://lms-p8nx.vercel.app',
     process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 const corsOptions = {
     origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, Postman, curl)
         if (!origin) return callback(null, true);
         if (ALLOWED_ORIGINS.includes(origin)) {
             return callback(null, true);
@@ -63,28 +58,18 @@ app.use('/uploads', express.static('uploads'));
 
 // Socket.IO
 io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
-
-    socket.on('join_chat', (userId) => {
-        socket.join(userId);
-        console.log(`User ${userId} joined their private room`);
-    });
-
+    socket.on('join_chat', (userId) => socket.join(userId));
     socket.on('send_message', async (data) => {
         try {
             const { senderId, receiverId, message } = data;
             const newMessage = await Message.create({ senderId, receiverId, message });
-            
             io.to(receiverId).emit('receive_message', newMessage);
             io.to(senderId).emit('receive_message', newMessage);
         } catch (error) {
             console.error('Error saving message:', error);
         }
     });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
+    socket.on('disconnect', () => console.log('User disconnected'));
 });
 
 // Routes
@@ -97,6 +82,7 @@ app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/requests', require('./routes/bookRequestRoutes'));
 app.use('/api/issued', require('./routes/issuedBookRoutes'));
 
+// Health Check
 app.get('/', (req, res) => {
     res.json({ 
         message: 'Smart Campus LMS API is running...',
