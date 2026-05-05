@@ -21,6 +21,7 @@ const io = new Server(server, {
             'http://localhost:5173',
             'http://localhost:3000',
             'https://lms-p8nx.vercel.app',
+            'https://lms-3-0mws.onrender.com',
             process.env.FRONTEND_URL,
         ].filter(Boolean),
         methods: ['GET', 'POST'],
@@ -33,6 +34,7 @@ const ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',
     'https://lms-p8nx.vercel.app',
+    'https://lms-3-0mws.onrender.com',
     process.env.FRONTEND_URL,
 ].filter(Boolean);
 
